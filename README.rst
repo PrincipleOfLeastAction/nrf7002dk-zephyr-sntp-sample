@@ -24,6 +24,7 @@ To use, we have to be put the following in ``proj.conf``:
 Example output
 ##################
 .. code-block:: console
+
    *** Booting nRF Connect SDK v2.5.0 ***
    [00:00:00.623,748] K
    m<inf> net_config: Initializing network
