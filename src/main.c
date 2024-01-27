@@ -28,6 +28,9 @@ LOG_MODULE_REGISTER(sta, CONFIG_LOG_DEFAULT_LEVEL);
 
 #include "net_private.h"
 
+#include <zephyr/net/sntp.h>
+#include <zephyr/net/socket.h>
+
 #define WIFI_SHELL_MODULE "wifi"
 
 #define WIFI_SHELL_MGMT_EVENTS (NET_EVENT_WIFI_CONNECT_RESULT |		\
@@ -49,6 +52,11 @@ static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 
 static struct net_mgmt_event_callback wifi_shell_mgmt_cb;
 static struct net_mgmt_event_callback net_shell_mgmt_cb;
+
+#define SERVER_HOSTNAME "pool.ntp.org"
+#define SERVER_PORT "123"
+
+static struct sockaddr_storage server;
 
 static struct {
 	const struct shell *sh;
@@ -283,6 +291,47 @@ int bytes_from_str(const char *str, uint8_t *bytes, size_t bytes_len)
 	return 0;
 }
 
+static int server_resolve(void)
+{
+	/* STEP 6.1 - Call getaddrinfo() to get the IP address of the echo server */
+	int err;
+	struct addrinfo *result;
+	struct addrinfo hints = {
+		.ai_family = AF_INET,
+		.ai_socktype = SOCK_DGRAM
+	};
+
+	err = getaddrinfo(SERVER_HOSTNAME, SERVER_PORT, &hints, &result);
+	if (err != 0) {
+		LOG_INF("ERROR: getaddrinfo failed %d", err);
+		return -EIO;
+	}
+
+	if (result == NULL) {
+		LOG_INF("ERROR: Address not found");
+		return -ENOENT;
+	}
+
+	/* STEP 6.2 - Retrieve the relevant information from the result structure*/
+	struct sockaddr_in *server4 = ((struct sockaddr_in *)&server);
+
+	server4->sin_addr.s_addr =
+		((struct sockaddr_in *)result->ai_addr)->sin_addr.s_addr;
+	server4->sin_family = AF_INET;
+	server4->sin_port = ((struct sockaddr_in *)result->ai_addr)->sin_port;
+
+	/* STEP 6.3 - Convert the address into a string and print it */
+	char ipv4_addr[NET_IPV4_ADDR_LEN];
+	inet_ntop(AF_INET, &server4->sin_addr.s_addr, ipv4_addr,
+		  sizeof(ipv4_addr));
+	LOG_INF("IPv4 Address found %s", ipv4_addr);
+
+	/* STEP 6.4 - Free the memory allocated for result */
+	freeaddrinfo(result);
+
+	return 0;
+}
+
 int main(void)
 {
 	memset(&context, 0, sizeof(context));
@@ -346,8 +395,44 @@ int main(void)
 		}
 
 		if (context.connected) {
-			k_sleep(K_FOREVER);
+			// Need to wait a little bit for ip to be assigned by DHCP?
+			k_sleep(K_SECONDS(1));
+
+			// Now try to get the time 
+			struct sntp_ctx ctx;
+			// struct sockaddr_in addr;
+
+			struct sntp_time sntp_time;
+			int rv;
+
+			server_resolve();
+
+			rv = sntp_init(&ctx, 
+						   (struct sockaddr *) &server,
+						   sizeof(struct sockaddr_in));
+			if (rv < 0) {
+				LOG_ERR("Failed to init SNTP IPv4 ctx: %d", rv);
+				goto end;
+			}
+
+			// Get a time update every 10s.
+			while (1) {
+				LOG_INF("Sending SNTP IPv4 request...");
+				rv = sntp_query(&ctx, 4 * MSEC_PER_SEC, &sntp_time);
+				if (rv < 0) {
+					LOG_ERR("SNTP IPv4 request failed: %d", rv);
+					goto end;
+				}
+
+				LOG_INF("status: %d", rv);
+				LOG_INF("time since Epoch: high word: %u, low word: %u",
+					(uint32_t)(sntp_time.seconds >> 32), (uint32_t)sntp_time.seconds);
+				k_sleep(K_SECONDS(10));
+			}
+end:
+			sntp_close(&ctx);
 		}
+		k_sleep(K_FOREVER);
 	}
 
 	return 0;
