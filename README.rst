@@ -12,6 +12,7 @@ This sample is created from a combination of the `wifi station sample <https://d
 Requirements
 ################
 * Built with nRF Connect SDK v2.5.0
+* Board: ``NRF7002DK_NRF5340_CPUAPP``
 
 Setup
 #######
