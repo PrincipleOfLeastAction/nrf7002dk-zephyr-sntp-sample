@@ -1,204 +1,92 @@
-.. _wifi_station_sample:
-
-Wi-Fi: Station
-##############
+SNTP sample with Zephyr
+####################################
 
 .. contents::
    :local:
    :depth: 2
 
-The Station sample demonstrates how to connect the Wi-Fi® station to a specified access point using Dynamic Host Configuration Protocol (DHCP).
+This is a SNTP sample for the nRF7002DK to get the unix time. The default SNTP sample doesn't work for the nRF7002DK as it keeps returning error ``Failed to send over UDP socket -1``
+
+This sample is created from a combination of the `wifi station sample <https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/samples/wifi/sta/README.html>`_, `Zephyr's SNTP sample <https://docs.zephyrproject.org/latest/samples/net/sockets/sntp_client/README.html>`_, and `these lines from the nRF91's cellular UDP sample <https://github.com/NordicDeveloperAcademy/cell-fund/blob/master/v2.4.0-v2.x.x/lesson3/cellfund_less3_exer1_solution/src/main.c#L36-L75>`_.
 
 Requirements
-************
+################
+* Built with nRF Connect SDK v2.5.0
 
-The sample supports the following development kits:
+Setup
+#######
+To use, we have to be put the following in ``proj.conf``:
 
-.. table-from-sample-yaml::
+#. SSID into ``CONFIG_STA_SAMPLE_SSID``
+#. Password into ``CONFIG_STA_SAMPLE_PASSWORD``
+#. Uncomment one of the security modes. E.g. ``CONFIG_STA_KEY_MGMT_WPA2``
 
-Overview
-********
-
-The sample can perform Wi-Fi operations such as connect and disconnect in the 2.4GHz and 5GHz bands depending on the capabilities of an access point.
-
-Using this sample, the development kit can connect to the specified access point in :abbr:`STA (Station)` mode.
-
-User interface
-**************
-
-The sample adds LED support to map with connection and disconnection events.
-
-LED 1:
-   Starts blinking when the sample is connected to the access point.
-
-   Stops blinking when the sample is disconnected from the access point.
-
-Configuration
-*************
-
-|config|
-
-You must configure the following Wi-Fi credentials in the :file:`prj.conf` file:
-
-* Network name (SSID)
-* Key management
-* Password
-
-.. note::
-   You can also use ``menuconfig`` to enable ``Key management`` option.
-
-See :ref:`zephyr:menuconfig` in the Zephyr documentation for instructions on how to run ``menuconfig``.
-
-Configuration options
-=====================
-
-The following sample-specific Kconfig option is used in this sample (located in :file:`samples/wifi/sta/Kconfig`):
-
-.. _CONFIG_NRF700X_QSPI_ENCRYPTION_KEY:
-
-CONFIG_NRF700X_QSPI_ENCRYPTION_KEY
-   This option specifies the QSPI encryption key.
-
-Quad Serial Peripheral Interface (QSPI) encryption
-**************************************************
-
-This sample demonstrates QSPI encryption API usage.
-You can set the key using the :ref:`CONFIG_NRF700X_QSPI_ENCRYPTION_KEY <CONFIG_NRF700X_QSPI_ENCRYPTION_KEY>` Kconfig option.
-
-If encryption of the QSPI traffic is required for the production devices, matching keys must be programmed in both the nRF7002 OTP and non-volatile storage associated with the host.
-The key from non-volatile storage must be set as the encryption key using the APIs.
-
-Power management
-****************
-
-This sample also enables Zephyr's power management policy by default, which sets the nRF5340 :term:`System on Chip (SoC)` into low-power mode whenever it is idle.
-See :ref:`zephyr:pm-guide` in the Zephyr documentation for more information on power management.
-
-IP addressing
-*************
-The sample uses DHCP to obtain an IP address for the Wi-Fi interface.
-It starts with a default static IP address to handle networks without DHCP servers, or if the DHCP server is not available.
-Successful DHCP handshake will override the default static IP configuration.
-
-You can change the following default static configuration in the :file:`prj.conf` file:
-
+Example output
+##################
 .. code-block:: console
+   *** Booting nRF Connect SDK v2.5.0 ***
+   [00:00:00.623,748] K
+   m<inf> net_config: Initializing network
+   [00:00:00.623,748] <inf> net_config: Waiting interface 1 (0x20001478) to be up...
+   [00:00:00.623,901] <inf> net_config: IPv4 address: 192.168.1.99
+   [00:00:00.623,962] <inf> net_config: Running dhcpv4 client...
+   [00:00:00.624,267] <inf> sta: Starting nrf7002dk_nrf5340_cpuapp with CPU frequency: 64 MHz
+   [00:00:01.624,328] <inf> sta: QSPI Encryption disabled
+   [00:00:01.624,389] <inf> sta: Static IP address (overridable): 192.168.1.99/255.255.255.0 -> 192.168.1.1
+   [00:00:03.188,385] <inf> sta: Connection requested
+   [00:00:03.188,446] <inf> sta: ==================
+   [00:00:03.188,476] <inf> sta: State: SCANNING
+   [00:00:03.488,586] <inf> sta: ==================
+   [00:00:03.488,647] <inf> sta: State: SCANNING
+   [00:00:03.788,757] <inf> sta: ==================
+   [00:00:03.788,787] <inf> sta: State: SCANNING
+   [00:00:04.088,928] <inf> sta: ==================
+   [00:00:04.088,958] <inf> sta: State: SCANNING
+   [00:00:04.389,099] <inf> sta: ==================
+   [00:00:04.389,129] <inf> sta: State: SCANNING
+   [00:00:04.689,270] <inf> sta: ==================
+   [00:00:04.689,331] <inf> sta: State: SCANNING
+   [00:00:04.989,440] <inf> sta: ==================
+   [00:00:04.989,471] <inf> sta: State: SCANNING
+   [00:00:05.289,642] <inf> sta: ==================
+   [00:00:05.289,672] <inf> sta: State: SCANNING
+   [00:00:05.589,813] <inf> sta: ==================
+   [00:00:05.589,843] <inf> sta: State: SCANNING
+   [00:00:05.889,984] <inf> sta: ==================
+   [00:00:05.890,045] <inf> sta: State: SCANNING
+   [00:00:06.190,216] <inf> sta: ==================
+   [00:00:06.190,216] <inf> sta: State: SCANNING
+   [00:00:06.490,356] <inf> sta: ==================
+   [00:00:06.490,386] <inf> sta: State: SCANNING
+   [00:00:06.790,527] <inf> sta: ==================
+   [00:00:06.790,557] <inf> sta: State: SCANNING
+   [00:00:07.090,728] <inf> sta: ==================
+   [00:00:07.090,759] <inf> sta: State: AUTHENTICATING
+   [00:00:07.386,230] <inf> sta: Connected
+   [00:00:07.405,181] <inf> net_dhcpv4: Received: 192.168.50.5
+   [00:00:07.405,334] <inf> net_config: IPv4 address: 192.168.50.5
+   [00:00:07.405,364] <inf> net_config: Lease time: 86400 seconds
+   [00:00:07.405,395] <inf> net_config: Subnet: 255.255.255.0
+   [00:00:07.405,426] <inf> net_config: Router: 192.168.50.1
+   [00:00:07.405,548] <inf> sta: DHCP IP address: 192.168.50.5
+   [00:00:07.450,714] <inf> net_config: IPv6 address: fe80::f6ce:36ff:fe00:1ece
+   [00:00:08.413,635] <inf> sta: IPv4 Address found 129.250.35.251
+   [00:00:08.414,001] <inf> sta: Sending SNTP IPv4 request...
+   [00:00:08.627,899] <inf> sta: status: 0
+   [00:00:08.627,929] <inf> sta: time since Epoch: high word: 0, low word: 1706359350
+   [00:00:18.627,990] <inf> sta: Sending SNTP IPv4 request...
+   [00:00:18.764,129] <inf> sta: status: 0
+   [00:00:18.764,129] <inf> sta: time since Epoch: high word: 0, low word: 1706359360
+   [00:00:28.764,221] <inf> sta: Sending SNTP IPv4 request...
+   [00:00:28.901,824] <inf> sta: status: 0
+   [00:00:28.901,824] <inf> sta: time since Epoch: high word: 0, low word: 1706359370
+   [00:00:38.901,947] <inf> sta: Sending SNTP IPv4 request...
+   [00:00:39.040,191] <inf> sta: status: 0
+   [00:00:39.040,222] <inf> sta: time since Epoch: high word: 0, low word: 1706359380
+   [00:00:49.040,283] <inf> sta: Sending SNTP IPv4 request...
+   [00:00:49.177,459] <inf> sta: status: 0
+   [00:00:49.177,459] <inf> sta: time since Epoch: high word: 0, low word: 1706359390
 
-  CONFIG_NET_CONFIG_MY_IPV4_ADDR="192.168.1.98"
-  CONFIG_NET_CONFIG_MY_IPV4_NETMASK="255.255.255.0"
-  CONFIG_NET_CONFIG_MY_IPV4_GW="192.168.1.1"
-
-Building and running
-********************
-
-.. |sample path| replace:: :file:`samples/wifi/sta`
-
-.. include:: /includes/build_and_run_ns.txt
-
-Currently, only the nRF7002 DK is supported.
-
-To build for the nRF7002 DK, use the ``nrf7002dk_nrf5340_cpuapp`` build target.
-The following is an example of the CLI command:
-
-.. code-block:: console
-
-   west build -b nrf7002dk_nrf5340_cpuapp
-
-Testing
-=======
-
-|test_sample|
-
-#. |connect_kit|
-#. |connect_terminal|
-
-   The sample shows the following output:
-
-   .. code-block:: console
-
-    [00:00:02.016,235] <inf> sta: Connection requested
-    [00:00:02.316,314] <inf> sta: ==================
-    [00:00:02.316,314] <inf> sta: State: SCANNING
-    [00:00:02.616,424] <inf> sta: ==================
-    [00:00:02.616,424] <inf> sta: State: SCANNING
-    [00:00:02.916,534] <inf> sta: ==================
-    [00:00:02.916,534] <inf> sta: State: SCANNING
-    [00:00:03.216,613] <inf> sta: ==================
-    [00:00:03.216,613] <inf> sta: State: SCANNING
-    [00:00:03.516,723] <inf> sta: ==================
-    [00:00:03.516,723] <inf> sta: State: SCANNING
-    [00:00:03.816,802] <inf> sta: ==================
-    [00:00:03.816,802] <inf> sta: State: SCANNING
-    [00:00:04.116,882] <inf> sta: ==================
-    [00:00:04.116,882] <inf> sta: State: SCANNING
-    [00:00:04.416,961] <inf> sta: ==================
-    [00:00:04.416,961] <inf> sta: State: SCANNING
-    [00:00:04.717,071] <inf> sta: ==================
-    [00:00:04.717,071] <inf> sta: State: SCANNING
-    [00:00:05.017,150] <inf> sta: ==================
-    [00:00:05.017,150] <inf> sta: State: SCANNING
-    [00:00:05.317,230] <inf> sta: ==================
-    [00:00:05.317,230] <inf> sta: State: SCANNING
-    [00:00:05.617,309] <inf> sta: ==================
-    [00:00:05.617,309] <inf> sta: State: SCANNING
-    [00:00:05.917,419] <inf> sta: ==================
-    [00:00:05.917,419] <inf> sta: State: SCANNING
-    [00:00:06.217,529] <inf> sta: ==================
-    [00:00:06.217,529] <inf> sta: State: SCANNING
-    [00:00:06.517,639] <inf> sta: ==================
-    [00:00:06.517,639] <inf> sta: State: SCANNING
-    [00:00:06.817,749] <inf> sta: ==================
-    [00:00:06.817,749] <inf> sta: State: SCANNING
-    [00:00:07.117,858] <inf> sta: ==================
-    [00:00:07.117,858] <inf> sta: State: SCANNING
-    [00:00:07.336,730] <inf> wpa_supp: wlan0: SME: Trying to authenticate with aa:bb:cc:dd:ee:ff (SSID='<MySSID>' freq=5785 MHz)
-    [00:00:07.353,027] <inf> nrf_wifi: nrf_wifi_wpa_supp_authenticate:Authentication request sent successfully
-
-    [00:00:07.417,938] <inf> sta: ==================
-    [00:00:07.417,938] <inf> sta: State: AUTHENTICATING
-    [00:00:07.606,628] <inf> wpa_supp: wlan0: Trying to associate with aa:bb:cc:dd:ee:ff (SSID='<MySSID>' freq=5785 MHz)
-    [00:00:07.609,680] <inf> nrf_wifi: nrf_wifi_wpa_supp_associate: Association request sent successfully
-
-    [00:00:07.621,978] <inf> wpa_supp: wpa_drv_zep_get_ssid: SSID size: 5
-
-    [00:00:07.622,070] <inf> wpa_supp: wlan0: Associated with aa:bb:cc:dd:ee:ff
-    [00:00:07.622,192] <inf> wpa_supp: wlan0: CTRL-EVENT-CONNECTED - Connection to aa:bb:cc:dd:ee:ff completed [id=0 id_str=]
-    [00:00:07.622,192] <inf> sta: Connected
-    [00:00:07.623,779] <inf> wpa_supp: wlan0: CTRL-EVENT-SUBNET-STATUS-UPDATE status=0
-    [00:00:07.648,406] <inf> net_dhcpv4: Received: 192.168.119.6
-    [00:00:07.648,468] <inf> net_config: IPv4 address: 192.168.119.6
-    [00:00:07.648,498] <inf> net_config: Lease time: 3599 seconds
-    [00:00:07.648,498] <inf> net_config: Subnet: 255.255.255.0
-    [00:00:07.648,529] <inf> net_config: Router: 192.168.119.147
-    [00:00:07.648,559] <inf> sta: DHCP IP address: 192.168.119.6
-    [00:00:07.720,153] <inf> sta: ==================
-    [00:00:07.720,153] <inf> sta: State: COMPLETED
-    [00:00:07.720,153] <inf> sta: Interface Mode: STATION
-    [00:00:07.720,184] <inf> sta: Link Mode: WIFI 6 (802.11ax/HE)
-    [00:00:07.720,184] <inf> sta: SSID: <MySSID>
-    [00:00:07.720,214] <inf> sta: BSSID: aa:bb:cc:dd:ee:ff
-    [00:00:07.720,214] <inf> sta: Band: 5GHz
-    [00:00:07.720,214] <inf> sta: Channel: 157
-    [00:00:07.720,245] <inf> sta: Security: OPEN
-    [00:00:07.720,245] <inf> sta: MFP: UNKNOWN
-    [00:00:07.720,245] <inf> sta: RSSI: -57
-    [00:00:07.720,245] <inf> sta: Static IP address:
-
-Power management testing
-************************
-
-You can use this sample to measure the current consumption of both the nRF5340 SoC and the nRF7002 device independently by using two separate Power Profiler Kit II (PPK2) devices.
-The nRF5340 SoC is connected to the first PPK2 and the nRF7002 DK is connected to the second PPK2.
-
-See `Measuring current`_ for more information about how to set up and measure the current consumption of both the nRF5340 SoC and the nRF7002 device.
-
-The average current consumption in an idle case can be around ~1-2 mA in the nRF5340 SoC and ~20 µA in the nRF7002 device.
-
-See :ref:`app_power_opt` for more information on power management testing and usage of the PPK2.
-
-Dependencies
-************
-
-This sample uses the following library:
-
-* :ref:`nrf_security`
+Limitations
+#############
+This hasn't been tested or optimised on low current consumption.
